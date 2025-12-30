@@ -15,3 +15,5 @@ services:
         generateValue: true
       - key: ADMIN_KEY
         generateValue: true
+      - key: HOST
+        value: 0.0.0.0
