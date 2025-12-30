@@ -1,30 +1,19 @@
-// Example Node.js/Express backend server for managing credits
-// This would run on your own server
+// JavaScript version for easier deployment to Render
+// This is a compiled version of the TypeScript server
 
-import express from "express";
-import type { Request, Response } from "express";
-import { v4 as uuidv4 } from "uuid";
+const express = require("express");
+const { v4: uuidv4 } = require("uuid");
 
 const app = express();
 app.use(express.json());
 
 // Store users in database (use real DB in production)
-interface UserData {
-  id: string;
-  email: string;
-  apiKey: string;
-  credits: number;
-  totalUsed: number;
-  createdAt: string;
-  lastUsed: string;
-}
-
-const users: Map<string, UserData> = new Map();
+const users = new Map();
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 const SERVER_AUTH_KEY = process.env.SERVER_AUTH_KEY || "dev-key";
 
 // Add sample users for testing
-const sampleUsers: UserData[] = [
+const sampleUsers = [
   {
     id: "sample-1",
     email: "user1@example.com",
@@ -48,7 +37,7 @@ const sampleUsers: UserData[] = [
 sampleUsers.forEach(user => users.set(user.apiKey, user));
 
 // Middleware for auth
-const authMiddleware = (req: Request, res: Response, next: Function) => {
+const authMiddleware = (req, res, next) => {
   const authHeader = req.headers.authorization;
   if (authHeader === `Bearer ${SERVER_AUTH_KEY}`) {
     next();
@@ -58,7 +47,7 @@ const authMiddleware = (req: Request, res: Response, next: Function) => {
 };
 
 // Create new user
-app.post("/api/users/create", (req: Request, res: Response) => {
+app.post("/api/users/create", (req, res) => {
   const { email, initialCredits = 1000 } = req.body;
 
   if (!email) {
@@ -66,7 +55,7 @@ app.post("/api/users/create", (req: Request, res: Response) => {
   }
 
   const apiKey = `sk_${uuidv4()}`;
-  const user: UserData = {
+  const user = {
     id: uuidv4(),
     email,
     apiKey,
@@ -90,7 +79,7 @@ app.post("/api/users/create", (req: Request, res: Response) => {
 });
 
 // Verify API key
-app.post("/api/verify-key", authMiddleware, (req: Request, res: Response) => {
+app.post("/api/verify-key", authMiddleware, (req, res) => {
   const { apiKey, requiredCredits = 1 } = req.body;
 
   const user = users.get(apiKey);
@@ -107,7 +96,7 @@ app.post("/api/verify-key", authMiddleware, (req: Request, res: Response) => {
 });
 
 // Get user credits
-app.get("/api/user-credits", (req: Request, res: Response) => {
+app.get("/api/user-credits", (req, res) => {
   const apiKey = req.headers.authorization?.replace("Bearer ", "");
 
   if (!apiKey) {
@@ -123,7 +112,7 @@ app.get("/api/user-credits", (req: Request, res: Response) => {
 });
 
 // Deduct credits
-app.post("/api/deduct-credits", authMiddleware, (req: Request, res: Response) => {
+app.post("/api/deduct-credits", authMiddleware, (req, res) => {
   const { userId, apiKey, service, cost } = req.body;
 
   const user = users.get(apiKey);
@@ -150,13 +139,13 @@ app.post("/api/deduct-credits", authMiddleware, (req: Request, res: Response) =>
 });
 
 // Get all users (for syncing to Cloudflare KV)
-app.get("/api/users", authMiddleware, (req: Request, res: Response) => {
+app.get("/api/users", authMiddleware, (req, res) => {
   const userList = Array.from(users.values());
   res.json(userList);
 });
 
 // Add credits to user
-app.post("/api/add-credits", authMiddleware, (req: Request, res: Response) => {
+app.post("/api/add-credits", authMiddleware, (req, res) => {
   const { apiKey, amount } = req.body;
 
   const user = users.get(apiKey);
@@ -173,7 +162,7 @@ app.post("/api/add-credits", authMiddleware, (req: Request, res: Response) => {
 });
 
 // Get user usage stats
-app.get("/api/user/:apiKey/stats", authMiddleware, (req: Request, res: Response) => {
+app.get("/api/user/:apiKey/stats", authMiddleware, (req, res) => {
   const user = users.get(req.params.apiKey);
   if (!user) {
     return res.status(404).json({ error: "User not found" });
@@ -184,6 +173,15 @@ app.get("/api/user/:apiKey/stats", authMiddleware, (req: Request, res: Response)
     totalUsed: user.totalUsed,
     createdAt: user.createdAt,
     lastUsed: user.lastUsed,
+  });
+});
+
+// Health check
+app.get("/health", (req, res) => {
+  res.json({
+    status: "OK",
+    timestamp: new Date().toISOString(),
+    version: "1.0.0"
   });
 });
 
@@ -200,6 +198,7 @@ app.listen(PORT, HOST, () => {
   console.log("  GET  /api/users - Get all users");
   console.log("  POST /api/add-credits - Add credits");
   console.log("  GET  /api/user/:apiKey/stats - Get user stats");
+  console.log("  GET  /health - Health check");
 });
 
-export default app;
+module.exports = app;

@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: osint-api-server
+    runtime: node
+    buildCommand: cd server && npm install
+    startCommand: cd server && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        generateValue: true
+      - key: JWT_SECRET
+        generateValue: true
+      - key: SERVER_AUTH_KEY
+        generateValue: true
+      - key: ADMIN_KEY
+        generateValue: true

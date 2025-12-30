@@ -2,12 +2,12 @@
   "name": "osint-api-server",
   "version": "1.0.0",
   "description": "Backend server for OSINT API credit management",
-  "type": "module",
-  "main": "dist/index.js",
+  "main": "index.js",
   "scripts": {
-    "dev": "ts-node index.ts",
-    "build": "tsc",
-    "start": "node dist/index.js"
+    "dev": "node index.js",
+    "build": "echo 'No build needed for JS version'",
+    "start": "node index.js",
+    "render-postbuild": "echo 'Build complete'"
   },
   "dependencies": {
     "express": "^4.18.0",
