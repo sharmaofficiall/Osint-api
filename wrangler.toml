@@ -1,0 +1,34 @@
+name = "osint-api-worker"
+main = "src/index.ts"
+compatibility_date = "2024-12-01"
+workers_dev = true
+
+# KV Namespaces (for development, these are optional)
+[[kv_namespaces]]
+binding = "CREDITS"
+id = "dev-credits"
+preview_id = "dev-credits-preview"
+
+[[kv_namespaces]]
+binding = "CACHE"
+id = "dev-cache"
+preview_id = "dev-cache-preview"
+
+# Environment variables
+[vars]
+ENVIRONMENT = "development"
+API_VERSION = "1.0.0-dev"
+SERVER_URL = "http://localhost:3000"
+SERVER_AUTH_KEY = "dev-key"
+ADMIN_KEY = "dev-admin"
+
+[env.production]
+vars = { ENVIRONMENT = "production", API_VERSION = "1.0.0" }
+secrets = ["SERVER_URL", "SERVER_AUTH_KEY", "ADMIN_KEY"]
+kv_namespaces = [
+  { binding = "CREDITS", id = "YOUR_KV_ID", preview_id = "YOUR_PREVIEW_KV_ID" },
+  { binding = "CACHE", id = "YOUR_CACHE_KV_ID", preview_id = "YOUR_PREVIEW_CACHE_KV_ID" }
+]
+
+[triggers]
+crons = ["0 0 * * *"]
